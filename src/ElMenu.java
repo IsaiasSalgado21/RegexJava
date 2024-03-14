@@ -51,10 +51,12 @@ public class ElMenu extends JFrame {
         for (String line : lines) {
             line = line.trim();
             if (!line.isEmpty()) {
-                String[] tokens = line.split("\\s+");
+                String[] tokens = line.split("\\b|(?<=[,.='])|(?=[,.='])");
                 for (String token : tokens) {
-                    String[] info = getTokenInfo(token);
-                    model.addRow(new Object[]{lineCount, token, info[0], info[1]});
+                    if (!token.isEmpty()) { // Avoid adding empty tokens
+                        String[] info = getTokenInfo(token);
+                        model.addRow(new Object[]{lineCount, token, info[0], info[1]});
+                    }
                 }
                 lineCount++;
             }
@@ -94,9 +96,9 @@ public class ElMenu extends JFrame {
                 return new String[]{"Constante", "604"};
             default:
                 if (token.matches("\\b\\w+\\b")) {
-                    return new String[]{"Palabra", "99"}; // Assuming code 99 for undefined words
+                    return new String[]{"Palabra", "99"}; 
                 } else {
-                    return new String[]{"Inválido", "-1"}; // Assuming code -1 for invalid tokens
+                    return new String[]{"Inválido", "-1"}; 
                 }
         }
     }
