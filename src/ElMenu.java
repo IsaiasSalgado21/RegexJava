@@ -6,11 +6,10 @@ import java.util.regex.*;
 
 public class ElMenu extends JFrame {
 
-    public static String patternNum = "([a-zA-Z_0-9])";
     public static String Text = null;
 
     public ElMenu() {
-        setTitle("Regex");
+        setTitle("Escáner DML");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(600, 500);
         setLocationRelativeTo(null);
@@ -41,36 +40,66 @@ public class ElMenu extends JFrame {
 
     private static void processAnalysis(String inputText) {
         DefaultTableModel model = new DefaultTableModel();
-        model.addColumn("No.Línea");
-        model.addColumn("Cadena");
+        model.addColumn("No. Línea");
+        model.addColumn("TOKEN");
         model.addColumn("Tipo");
+        model.addColumn("Código");
 
-        Pattern pattern = Pattern.compile(patternNum);
-        int i = 1;
-        int line;
-        Matcher matcher = pattern.matcher(inputText);
-        while (matcher.find()) {
-            String number = matcher.group();
-            line = getLineParagraph(inputText, matcher.start());
-            String type = isType(number);
-            model.addRow(new Object[]{i, line, number, type});
-            i++;
+        String[] lines = inputText.split("\n");
+        int lineCount = 1;
+
+        for (String line : lines) {
+            line = line.trim();
+            if (!line.isEmpty()) {
+                String[] tokens = line.split("\\s+");
+                for (String token : tokens) {
+                    String[] info = getTokenInfo(token);
+                    model.addRow(new Object[]{lineCount, token, info[0], info[1]});
+                }
+                lineCount++;
+            }
         }
 
         JTable table = new JTable(model);
         JOptionPane.showMessageDialog(null, new JScrollPane(table));
     }
 
-    private static int getLineParagraph(String text, int position) {
-        int lineNumber = 1;
-        for (int i = 0; i < position; i++) {
-            if (text.charAt(i) == '\n') {
-                lineNumber++;
-            }
+    private static String[] getTokenInfo(String token) {
+        switch (token) {
+            case "SELECT":
+            case "FROM":
+            case "WHERE":
+            case "AND":
+                return new String[]{"Palabras Reservadas", "1"};
+            case "ANOMBRE":
+            case "CALIFICACION":
+            case "TURNO":
+            case "ALUMNOS":
+            case "INSCRITOS":
+            case "MATERIAS":
+            case "CARRERAS":
+            case "MNOMBRE":
+            case "CNOMBRE":
+            case "SEMESTRE":
+                return new String[]{"Identificador", "4"};
+            case ",":
+            case "=":
+                return new String[]{"Operador", "5"};
+            case "'":
+                return new String[]{"Delimitadores", "54"};
+            case ">=":
+            case "<=":
+                return new String[]{"Relacionales", "84"};
+            case "70":
+                return new String[]{"Constante", "604"};
+            default:
+                if (token.matches("\\b\\w+\\b")) {
+                    return new String[]{"Palabra", "99"}; // Assuming code 99 for undefined words
+                } else {
+                    return new String[]{"Inválido", "-1"}; // Assuming code -1 for invalid tokens
+                }
         }
-        return lineNumber;
     }
-
     public static String isType(String num) {
         if (isReal(num)) {
             return "Real";
@@ -113,4 +142,3 @@ public class ElMenu extends JFrame {
         });
     }
 }
-
