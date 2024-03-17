@@ -12,11 +12,15 @@ public class ElMenu extends JFrame {
     public static Map<String, Integer> tokenCounts = new HashMap<>();
     public static Map<String, Integer> initialCodes = new HashMap<>();
     public static int tokenCounter = 1;
+    public static int identifierCounter = 1;
+    public static int constantCounter = 1;
+    public static DefaultTableModel identifierTableModel = new DefaultTableModel();
+    public static DefaultTableModel constantTableModel = new DefaultTableModel();
 
     public ElMenu() {
         setTitle("Escáner DML");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(600, 500);
+        setSize(800, 600);
         setLocationRelativeTo(null);
         setVisible(true);
         JTextArea textArea = new JTextArea();
@@ -44,12 +48,23 @@ public class ElMenu extends JFrame {
     }
 
     private static void processAnalysis(String inputText) {
-        DefaultTableModel model = new DefaultTableModel();
-        model.addColumn("No.");
-        model.addColumn("Línea");
-        model.addColumn("TOKEN");
-        model.addColumn("Tipo");
-        model.addColumn("Código");
+        DefaultTableModel tokenTableModel = new DefaultTableModel();
+        tokenTableModel.addColumn("No.");
+        tokenTableModel.addColumn("Línea");
+        tokenTableModel.addColumn("TOKEN");
+        tokenTableModel.addColumn("Tipo");
+        tokenTableModel.addColumn("Código");
+
+        identifierTableModel = new DefaultTableModel();
+        identifierTableModel.addColumn("Identificador");
+        identifierTableModel.addColumn("Valor");
+        identifierTableModel.addColumn("Línea");
+
+        constantTableModel = new DefaultTableModel();
+        constantTableModel.addColumn("No.");
+        constantTableModel.addColumn("Constante");
+        constantTableModel.addColumn("Tipo");
+        constantTableModel.addColumn("Valor");
 
         String[] lines = inputText.split("\n");
         int lineCount = 1;
@@ -63,7 +78,12 @@ public class ElMenu extends JFrame {
                         String[] info = getTokenInfo(token);
                         if (!info[0].equals("Inválido")) {
                             int code = getCode(token, info[0]);
-                            model.addRow(new Object[]{tokenCounter++, lineCount, token, info[0], code});
+                            tokenTableModel.addRow(new Object[]{tokenCounter++, lineCount, token, info[0], code});
+                            if (info[0].equals("Identificador")) {
+                                identifierTableModel.addRow(new Object[]{token, "", lineCount});
+                            } else if (info[0].equals("Constante")) {
+                                constantTableModel.addRow(new Object[]{constantCounter++, token, "Valor", code});
+                            }
                         }
                     }
                 }
@@ -71,8 +91,16 @@ public class ElMenu extends JFrame {
             }
         }
 
-        JTable table = new JTable(model);
-        JOptionPane.showMessageDialog(null, new JScrollPane(table));
+        JTable tokenTable = new JTable(tokenTableModel);
+        JTable identifierTable = new JTable(identifierTableModel);
+        JTable constantTable = new JTable(constantTableModel);
+
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.addTab("Tokens", new JScrollPane(tokenTable));
+        tabbedPane.addTab("Identificadores", new JScrollPane(identifierTable));
+        tabbedPane.addTab("Constantes", new JScrollPane(constantTable));
+
+        JOptionPane.showMessageDialog(null, tabbedPane);
     }
 
     private static String[] getTokenInfo(String token) {
