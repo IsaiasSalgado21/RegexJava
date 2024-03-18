@@ -12,7 +12,7 @@ public class ElMenu extends JFrame {
     public static Map<String, Integer> tokenCounts = new HashMap<>();
     public static Map<String, Integer> initialCodes = new HashMap<>();
     public static int tokenCounter = 1;
-    public static int identifierCounter = 1;
+    public static int identifierCounter = 401; // Iniciar contador de identificadores en 401
     public static int constantCounter = 1;
     public static DefaultTableModel identifierTableModel = new DefaultTableModel();
     public static DefaultTableModel constantTableModel = new DefaultTableModel();
@@ -80,7 +80,7 @@ public class ElMenu extends JFrame {
                             int code = getCode(token, info[0]);
                             tokenTableModel.addRow(new Object[]{tokenCounter++, lineCount, token, info[0], code});
                             if (info[0].equals("Identificador")) {
-                                identifierTableModel.addRow(new Object[]{token, "", lineCount});
+                                identifierTableModel.addRow(new Object[]{token, identifierCounter++, lineCount}); // Asignar valor de identificador y aumentar contador
                             } else if (info[0].equals("Constante")) {
                                 constantTableModel.addRow(new Object[]{constantCounter++, token, "Valor", code});
                             }
@@ -219,4 +219,3 @@ public class ElMenu extends JFrame {
         });
     }
 }
-
