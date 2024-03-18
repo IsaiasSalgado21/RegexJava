@@ -13,7 +13,7 @@ public class ElMenu extends JFrame {
     public static Map<String, Integer> initialCodes = new HashMap<>();
     public static int tokenCounter = 1;
     public static int identifierCounter = 401; // Iniciar contador de identificadores en 401
-    public static int constantCounter = 1;
+    public static int constantCounter = 600; // Iniciar contador de constantes en 600
     public static DefaultTableModel identifierTableModel = new DefaultTableModel();
     public static DefaultTableModel constantTableModel = new DefaultTableModel();
 
@@ -82,7 +82,11 @@ public class ElMenu extends JFrame {
                             if (info[0].equals("Identificador")) {
                                 identifierTableModel.addRow(new Object[]{token, identifierCounter++, lineCount}); // Asignar valor de identificador y aumentar contador
                             } else if (info[0].equals("Constante")) {
-                                constantTableModel.addRow(new Object[]{constantCounter++, token, "Valor", code});
+                                if (token.matches("[a-zA-Z]+")) {
+                                    constantTableModel.addRow(new Object[]{constantCounter++, token, "String", code});
+                                } else if (token.matches("\\d+")) {
+                                    constantTableModel.addRow(new Object[]{constantCounter++, token, "Numérico", code});
+                                }
                             }
                         }
                     }
@@ -131,84 +135,26 @@ public class ElMenu extends JFrame {
                 return new String[]{"Relacionales", "84"};
             case "70":
                 return new String[]{"Constante", "604"};
+            case "LENAUT2":
+            case "TM":
+            case "ISC":
+            case "2023I":
+                return new String[]{"Constante", "61"}; // Tipo 61 para constantes string
             default:
                 if (token.matches("\\b\\w+\\b")) {
-                    return new String[]{"Palabra", "99"}; 
+                    return new String[]{"Palabra", "99"};
                 } else {
-                    return new String[]{"Inválido", "-1"}; 
+                    return new String[]{"Inválido", "-1"};
                 }
         }
     }
 
     private static int getCode(String token, String type) {
-        if (initialCodes.containsKey(type)) {
-            int initialCode = initialCodes.get(type);
-            if (tokenCounts.containsKey(type)) {
-                int count = tokenCounts.get(type);
-                tokenCounts.put(type, count + 1);
-                return initialCode + count;
-            } else {
-                tokenCounts.put(type, 1);
-                return initialCode;
-            }
-        } else {
-            initialCodes.put(type, getInitialCode(type));
-            tokenCounts.put(type, 1);
-            return initialCodes.get(type);
+        if (!tokenCounts.containsKey(token)) {
+            initialCodes.put(token, tokenCounter);
+            tokenCounts.put(token, 0);
         }
-    }
-
-    private static int getInitialCode(String type) {
-        switch (type) {
-            case "Palabras Reservadas":
-                return 10;
-            case "Identificador":
-                return 401;
-            case "Operador":
-                return 50;
-            case "Delimitadores":
-                return 54;
-            case "Relacionales":
-                return 83;
-            case "Constante":
-                return 600;
-            default:
-                return 1000; // Código base para otros tipos no especificados
-        }
-    }
-
-    public static String isType(String num) {
-        if (isReal(num)) {
-            return "Real";
-        } else if (isNatural(num)) {
-            return "Natural";
-        } else if (isExponential(num)) {
-            return "Exponential";
-        } else if (isPercentage(num)) {
-            return "Porcentaje";
-        } else if (isWord(num)) {
-            return "palabra";
-        }
-        return "Inválido";
-    }
-
-    public static boolean isReal(String num) {
-        return num.matches("\\b\\d+[,.]\\d+\\b");
-    }
-    public static boolean isWord(String num) {
-        return num.matches("([a-z])");
-    }
-
-    public static boolean isNatural(String num) {
-        return num.matches("\\b\\d+\\b");
-    }
-
-    public static boolean isExponential(String num) {
-        return num.matches("\\b\\d+[,.]\\d+E\\d+\\b");
-    }
-
-    public static boolean isPercentage(String num) {
-        return num.matches("\\b\\d+\\b%");
+        return initialCodes.get(token) + tokenCounts.merge(token, 1, Integer::sum) - 1;
     }
 
     public static void main(String[] args) {
